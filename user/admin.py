@@ -2,15 +2,19 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from .models import UserAccount, TeamMember, Specialty, MedicalCenter, Address, Plan, Subscription, Interest, \
-    Transaction, Doctor, CustomField
+    Transaction, Doctor, CustomField, MedicalCenterSpecialty, Service
 
 
 class TeamMemberInline(admin.TabularInline):
     model = TeamMember
 
 
-class SpecialtyInline(admin.TabularInline):
-    model = MedicalCenter.specialities.through
+class MedicalCenterSpecialtyInline(admin.StackedInline):
+    model = MedicalCenterSpecialty
+
+
+class ServicesInline(admin.StackedInline):
+    model = Service
 
 
 class AddressInline(admin.TabularInline):
@@ -26,14 +30,16 @@ class CustomFieldsInline(admin.TabularInline):
 
 
 class MedicalCenterAdmin(admin.ModelAdmin):
-    inlines = [TeamMemberInline, SpecialtyInline, DoctorsInLine, CustomFieldsInline]
+    inlines = [TeamMemberInline, DoctorsInLine, CustomFieldsInline, AddressInline, ServicesInline
+               ]
     fieldsets = (
         (None, {
             'fields': ('admin', 'title', 'overview', 'phone', 'email', 'url', 'is_promoted', 'logo', 'cover')
         }),
-        ('Address', {
-            'fields': ('addresses',),
-        }),
+        # ('Address', {
+        #     'fields': ('addresses',),
+        # }),
+
     )
 
 

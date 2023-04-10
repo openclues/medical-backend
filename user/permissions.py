@@ -1,7 +1,12 @@
+from django.utils import timezone
 from rest_framework import permissions
 
 
 # Permissions for MedicalCenter model
+from rest_framework.permissions import BasePermission
+
+from user.models import Subscription
+
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     """
@@ -61,3 +66,20 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return obj.user == request.user
+
+
+class HasSubscription(BasePermission):
+    message = "You must have an active subscription to access this resource."
+
+    def has_permission(self, request, view):
+        if request.user.is_authenticated:
+            # Check if the user has an active subscription
+            now = timezone.now()
+            active_subscription = Subscription.objects.filter(
+                user=request.user,
+                is_active=True,
+                start_date__lte=now,
+                end_date__gt=now,
+            ).first()
+            return active_subscription is not None
+        return False
